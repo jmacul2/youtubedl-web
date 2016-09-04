@@ -1,0 +1,51 @@
+<table class="table table-striped">
+<thead>
+  <tr>
+      <th>Title</th>
+      <th>Progress</th>
+      <th>Status</th>
+      <th>Speed</th>
+      <th>ETA</th>
+      <th>Options</th>
+  </tr>
+</thead>
+<tbody>
+{% raw %}
+  <tr ng-show="!downloads.length"><td colspan="6" style="text-align: center;">No downloads yet!</td></tr>
+  <tr ng-repeat="download in downloads">
+      <td class="col-md-4">
+          {{ download.title | limitTo: 45 }}{{download.title.length > 45 ? '...' : ''}}
+          <a href="{{download.url}}">
+              <span class="glyphicon glyphicon-new-window"></span>
+          </a>
+      </td>
+
+      <td class="col-md-4">
+        <div class="progress">
+          <div role="progressbar" class="progress-bar"
+               ng-class="{active: download.status == 'downloading', 'progress-bar-striped': download.status == 'downloading', 'progress-bar-success': download.status == 'finished'}"
+               aria-valuenow="{{ (download.downloaded_bytes * 100) / download.total_bytes }}" aria-valuemin="0" aria-valuemax="100"
+               style="min-width: 2em; width: {{ (download.downloaded_bytes * 100) / download.total_bytes | number:0}}%;"
+          >
+            {{ (download.downloaded_bytes * 100) / download.total_bytes | number:0}}%
+          </div>
+        </div>
+      </td>
+
+      <td class="col-md-1">{{download.status}}</td>
+      <td class="col-md-1">{{download.speed}}</td>
+      <td class="col-md-1">{{download.eta}}</td>
+
+      <td class="col-md-1">
+          <button class="btn btn-danger btn-xs" ng-click="deleteDownload(download.id)">
+              <span class="glyphicon glyphicon-trash"></span>
+          </button>
+          <button class="btn btn-primary btn-xs" ng-click="restartDownload(download.id)">
+              <span class="glyphicon glyphicon-repeat"></span>
+          </button>
+      </td>
+
+  </tr>
+{% endraw %}
+</tbody>
+</table>
