@@ -13,14 +13,11 @@
 {% raw %}
   <tr ng-show="!downloads.length"><td colspan="6" style="text-align: center;">No downloads yet!</td></tr>
   <tr ng-repeat="download in downloads">
-      <td class="col-md-4">
-          {{ download.title | limitTo: 45 }}{{download.title.length > 45 ? '...' : ''}}
-          <a href="{{download.url}}">
-              <span class="glyphicon glyphicon-new-window"></span>
-          </a>
+      <td class="col-md-5">
+          {{ download.title | limitTo: 65 }}{{download.title.length > 65 ? '...' : ''}}
       </td>
 
-      <td class="col-md-4">
+      <td class="col-md-3">
         <div class="progress">
           <div role="progressbar" class="progress-bar"
                ng-class="{active: download.status == 'downloading', 'progress-bar-striped': download.status == 'downloading', 'progress-bar-success': download.status == 'finished'}"
@@ -43,6 +40,9 @@
           <button class="btn btn-primary btn-xs" ng-click="restartDownload(download.id)">
               <span class="glyphicon glyphicon-repeat"></span>
           </button>
+          <a href="{{download.url}}">
+              <span class="glyphicon glyphicon-new-window"></span>
+          </a>
       </td>
 
   </tr>
