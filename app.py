@@ -1,46 +1,75 @@
+import json
+import random
+import time
+
+from celery import Celery
 from celery.result import AsyncResult
 from celery.worker.control import revoke
 from flask import Flask
-from flask.templating import render_template
-from flask_sqlalchemy import SQLAlchemy
-
-from celery import Celery
 from flask import request
-import json
-
+from flask.templating import render_template
+from flask_redis import FlaskRedis
 from youtube_dl.YoutubeDL import YoutubeDL
 
 app = Flask(__name__)
 app.config.update(
     CELERY_BROKER_URL='redis://localhost:6379',
     CELERY_RESULT_BACKEND='redis://localhost:6379',
-    SQLALCHEMY_DATABASE_URI='sqlite:////tmp/test.db'
+    REDIS_URL='redis://localhost:6379/1'
 )
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-db = SQLAlchemy(app)
+redis_store = FlaskRedis(app)
 
 
-class Download(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255))
-    url = db.Column(db.String(255))
-    downloaded_bytes = db.Column(db.BigInteger)
-    total_bytes = db.Column(db.BigInteger)
-    status = db.Column(db.String(255))
-    speed = db.Column(db.String(255))
-    eta = db.Column(db.String(255))
-    task_id = db.Column(db.BigInteger)
-
-    def __init__(self, url=None, title=None):
-        self.url = url
-        self.title = title
+class Download:
+    def __init__(self, json_content):
+        try:
+            j = json.loads(json_content)
+        except TypeError:
+            j = {}
+        self.id = j.get('id', '')
+        self.url = j.get('url', '')
+        self.title = j.get('title', '')
+        self.downloaded_bytes = j.get('downloaded_bytes', '')
+        self.total_bytes = j.get('total_bytes', '')
+        self.status = j.get('status', '')
+        self.speed = j.get('speed', '')
+        self.eta = j.get('eta', '')
+        self.task_id = j.get('task_id', '')
 
     def to_json(self):
-        return {c.name: getattr(self, c.name) or '' for c in self.__table__.columns}
+        return json.dumps(self.__dict__)
+
+    def save(self):
+        if self.id == '':
+            self.id = int(time.time() * 1000) + random.randint(0,999)
+        redis_store.set(self.id, self.to_json())
+        return self
+
+    @staticmethod
+    def find(id):
+        return Download(redis_store.get(id))
+
+    @staticmethod
+    def find_by_url(url):
+        for result in redis_store.scan_iter('*'):
+            try:
+                item = json.loads(redis_store.get(result))
+            except TypeError:
+                # Result not found
+                return None
+
+            if item.get('url') == url:
+                return item
+
+    def delete(self):
+        redis_store.delete(self.id)
 
     def set_details(self, info):
         try:
-            self.title = info.get('tmpfilename').replace('.part', '').replace('/downloads/', '')
+            self.title = info.get(
+                'tmpfilename'
+            ).replace('.part', '').replace('/downloads/', '')
         except Exception:
             pass
 
@@ -54,17 +83,13 @@ class Download(db.Model):
         self.speed = info.get('_speed_str', '')
         self.status = info.get('status', 'pending')
         self.eta = info.get('_eta_str', '')
-
-        db.session.commit()
-
-
-db.create_all()
+        self.save()
 
 
 @celery.task
 def download(id):
     with app.app_context():
-        d = Download.query.get(id)
+        d = Download.find(id)
         opts = {
             'outtmpl': '/downloads/%(title)s-%(id)s.%(ext)s',
             'progress_hooks': [d.set_details]
@@ -80,7 +105,9 @@ def index():
 
 @app.route('/downloads')
 def get_downloads():
-    return json.dumps([x.to_json() for x in Download.query.all()])
+    return json.dumps(
+        [json.loads(redis_store.get(x).decode()) for x in redis_store.scan_iter('*')]
+    )
 
 
 @app.route('/add', methods=['POST'])
@@ -88,33 +115,32 @@ def add_download():
     data = json.loads(request.data.decode())
     for url in data['url'].split('\n'):
         # Check if it exists
-        q = Download.query.filter_by(url=url).first()
+        q = Download.find_by_url(url)
         if q is None and url != '':
             # Store URL
-            d = Download(url=url, title=url)
-            db.session.add(d)
-            db.session.commit()
+            d = Download(json.dumps({'url': url, 'title': url}))
+            d = d.save()
 
             # Create task to download
             task = download.delay(d.id)
             d.task_id = task.id
             d.status = 'pending'
-            db.session.commit()
+            d.save()
 
     return 'OK', 201
 
 
 @app.route('/remove/<int:id>', methods=['DELETE'])
 def remove_download(id):
-    d = Download.query.get(id)
+    d = Download.find(id)
     task = AsyncResult(d.task_id)
     try:
         if not task.ready():
             revoke(d.task_id, terminate=True)
     except Exception:
         pass
-    db.session.delete(d)
-    db.session.commit()
+
+    d.delete()
     return 'OK', 200
 
 
