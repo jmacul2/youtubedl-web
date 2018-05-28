@@ -5,7 +5,7 @@ import time
 from celery import Celery
 from celery.result import AsyncResult
 from celery.worker.control import revoke
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask
 from flask import request
 from flask.templating import render_template
@@ -18,7 +18,9 @@ app.config.update(
     CELERY_RESULT_BACKEND='redis://localhost:6379',
     REDIS_URL='redis://localhost:6379/1'
 )
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery = Celery(
+    app.name, backend='rpc://', broker=app.config['CELERY_BROKER_URL']
+)
 redis_store = FlaskRedis(app)
 
 
@@ -38,6 +40,16 @@ class Download:
         self.eta = j.get('eta', '')
         self.task_id = j.get('task_id', '')
         self.last_update = j.get('last_update', '')
+
+        if self.last_update != '':
+            timestamp = datetime.strptime(self.last_update, '%Y-%m-%d %H:%M:%S')
+            two_mins_ago = timestamp + timedelta(minutes=2)
+            if two_mins_ago < datetime.now() and self.status != 'finished':
+                self.stuck = True
+            else:
+                self.stuck = False
+        else:
+            self.stuck = False
 
     def to_json(self):
         return json.dumps(self.__dict__)
@@ -110,7 +122,8 @@ def index():
 def get_downloads():
     result = []
     for i in redis_store.scan_iter('*'):
-        result.append(json.loads(redis_store.get(i).decode()))
+        d = Download(redis_store.get(i).decode())
+        result.append(json.loads(d.to_json()))
     return json.dumps(
         sorted(result, key=lambda x: (x['status'], x['last_update']))
     )
@@ -152,7 +165,10 @@ def remove_download(id):
 
 @app.route('/restart/<int:id>', methods=['POST'])
 def restart_download(id):
-    download.delay(id)
+    new = download.apply_async([id], countdown=5)
+    existing = Download.find(id)
+    existing.task_id = new.task_id
+    existing.save()
     return 'OK', 200
 
 

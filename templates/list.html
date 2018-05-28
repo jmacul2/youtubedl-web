@@ -21,7 +21,7 @@
       <td class="col-md-3">
         <div class="progress" ng-if="download.status != 'pending'">
           <div role="progressbar" class="progress-bar"
-               ng-class="{active: download.status == 'downloading', 'progress-bar-striped': download.status == 'downloading', 'progress-bar-success': download.status == 'finished'}"
+               ng-class="{active: download.status == 'downloading', 'progress-bar-striped': download.status == 'downloading' && !download.stuck, 'progress-bar-success': download.status == 'finished', 'progress-bar-danger': download.status == 'downloading' && download.stuck}"
                aria-valuenow="{{ (download.downloaded_bytes * 100) / download.total_bytes }}" aria-valuemin="0" aria-valuemax="100"
                style="min-width: 2em; width: {{ (download.downloaded_bytes * 100) / download.total_bytes | number:0}}%;"
           >
@@ -32,13 +32,18 @@
 
       <td class="col-md-1">
           <span class="label"
+                ng-if="!download.stuck"
                 ng-class="{'label-warning': download.status == 'pending', 'label-info': download.status == 'downloading', 'label-success': download.status == 'finished'}"
           >
               {{download.status}}
           </span>
+
+          <span ng-if="download.stuck" class="label label-danger">stuck</span>
       </td>
-      <td class="col-md-1">{{download.speed}}</td>
-      <td class="col-md-1">{{download.eta}}</td>
+      <td class="col-md-1"><span ng-if="!download.stuck">{{download.speed}}</span></td>
+      <td class="col-md-1">
+          <span ng-if="!download.stuck">{{download.eta}}</span>
+      </td>
       <td class="col-md-1">
           <span class="label label-small label-info" ng-if="download.status == 'downloading'">{{download.last_update}}</span>
           <span class="label label-info" ng-if="download.status == 'downloading'">{{ download.downloaded_bytes| bytes }} / {{download.total_bytes | bytes}}</span>
