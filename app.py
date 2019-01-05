@@ -121,9 +121,15 @@ def index():
 @app.route('/downloads')
 def get_downloads():
     result = []
+    enough = 0
     for i in redis_store.scan_iter('*'):
         d = Download(redis_store.get(i).decode())
-        result.append(json.loads(d.to_json()))
+        if d.status != 'finished':
+            result.append(json.loads(d.to_json()))
+        else:
+            if enough < 5:
+                result.append(json.loads(d.to_json()))
+                enough += 1
     return json.dumps(
         sorted(result, key=lambda x: (x['status'], x['last_update']))
     )
