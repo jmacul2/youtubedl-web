@@ -16,6 +16,14 @@
         {% include 'add.html' %}
     </div>
 
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
     {% include 'list.html' %}
 
 </div>

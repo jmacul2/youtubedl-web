@@ -7,16 +7,18 @@ from celery.result import AsyncResult
 from celery.worker.control import revoke
 from datetime import datetime, timedelta
 from flask import Flask
-from flask import request
+from flask import request, flash
 from flask.templating import render_template
 from flask_redis import FlaskRedis
 from youtube_dl.YoutubeDL import YoutubeDL
+from youtube_dl import DownloadError
 
 app = Flask(__name__)
 app.config.update(
+    SECRET_KEY='our-secret-key',
     CELERY_BROKER_URL='redis://localhost:6379',
     CELERY_RESULT_BACKEND='redis://localhost:6379',
-    REDIS_URL='redis://localhost:6379/1'
+    REDIS_URL='redis://localhost:6379/2'
 )
 celery = Celery(
     app.name, backend='rpc://', broker=app.config['CELERY_BROKER_URL']
@@ -84,7 +86,8 @@ class Download:
             self.title = info.get(
                 'tmpfilename'
             ).replace('.part', '').replace('/downloads/', '')
-        except Exception:
+        except Exception as ex:
+            print(ex)
             pass
 
         # Already completed downloads don't have `downloaded_bytes`
@@ -106,11 +109,20 @@ def download(id):
     with app.app_context():
         d = Download.find(id)
         opts = {
-            'outtmpl': '/downloads/%(title)s-%(id)s.%(ext)s',
-            'progress_hooks': [d.set_details]
+            'outtmpl': '/home/michael/Videos/youtube/%(title)s-%(id)s.%(ext)s',
+            'progress_hooks': [d.set_details],
+            'format': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',  # 'bestaudio/best',
+            'no-playlist': True,  # attempt to get only video given. Prevent false positive 'Stuck' by trying to download multiple items in list
         }
         y = YoutubeDL(params=opts)
-        y.download([d.url])
+        try:
+            y.download([d.url])
+        except DownloadError as ex:
+            pass
+            # not sure how to use this catch yet. 
+            # Especially since the first video can complete then it tries next in playlist and fails
+            #d.status = 'error'
+            #d.save()
 
 
 @app.route('/')
@@ -131,13 +143,15 @@ def get_downloads():
                 result.append(json.loads(d.to_json()))
                 enough += 1
     return json.dumps(
-        sorted(result, key=lambda x: (x['status'], x['last_update']))
+        sorted(result, key=lambda x: (x['last_update']))
     )
 
 
 @app.route('/add', methods=['POST'])
 def add_download():
     data = json.loads(request.data.decode())
+    count = 0
+    cc = 0
     for url in data['url'].split('\n'):
         # Check if it exists
         q = Download.find_by_url(url)
@@ -151,6 +165,12 @@ def add_download():
             d.task_id = task.id
             d.status = 'pending'
             d.save()
+
+            count += 1
+        else:
+            cc += 1
+
+    flash('{} urls added. {} urls skipped'.format(count, cc))
 
     return 'OK', 201
 

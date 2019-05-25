@@ -33,7 +33,12 @@
       <td class="col-md-1">
           <span class="label"
                 ng-if="!download.stuck"
-                ng-class="{'label-warning': download.status == 'pending', 'label-info': download.status == 'downloading', 'label-success': download.status == 'finished'}"
+                ng-class="{
+                    'label-warning': download.status == 'pending',
+                    'label-info': download.status == 'downloading',
+                    'label-success': download.status == 'finished',
+                    'label-secondary': download.status == 'error',
+                }"
           >
               {{download.status}}
           </span>
