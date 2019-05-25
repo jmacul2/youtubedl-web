@@ -7,7 +7,7 @@
   .controller('DownloaderController', ['$scope', '$log', '$http', '$timeout',
     function($scope, $log, $http, $timeout) {
         var timeout = "";
-
+        
         $scope.addDownload = function () {
             $http.post('/add', {'url': $scope.url}).success(function (results) {
                 $log.log(results);
@@ -17,7 +17,7 @@
                 $log.log(error);
             });
         };
-
+        
         $scope.deleteDownload = function (id) {
             $http.delete('/remove/' + id).success(function (results) {
                 $log.log(results);
@@ -25,7 +25,7 @@
                 $log.log(error);
             });
         };
-
+        
         $scope.restartDownload = function (id) {
             $http.post('/restart/' + id).success(function (results) {
                 $log.log(results);
@@ -33,7 +33,7 @@
                 $log.log(error);
             })
         };
-
+        
         $scope.getDownloads = function () {
             $http.get('/downloads').success(function (results) {
                 $scope.downloads = results;
@@ -43,13 +43,29 @@
                 $timeout.cancel(timeout);
             });
         };
-
+        
+        $scope.getFormats = function () {
+            $http.get('/formats').success(function (results) {
+                $scope.formats = results;
+            }).error(function (error) {
+                $log.log(error);
+            });
+        };
+        
         $scope.getDownloads();
-
+        
+        $scope.getFormats();
+        $log.log('got formats');
+        $log.log($scope.formats);
+        
         $scope.$watch('url', function () {
             $('#url-box').attr('rows', $('#url-box').val().split('\n').length);
         });
 
+        $scope.$watch('selectedFormat', function () {
+            $('#')
+        })
+        
     }])
       .filter('bytes', function() {
             return function(bytes, precision) {

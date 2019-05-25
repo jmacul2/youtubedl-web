@@ -1,6 +1,9 @@
 <form role="form" >
     <div class="input-group">
 
+        <p ng-show="!formats.length">No formats defined!</p>
+        <select name="format" class="form-control" id="format-box" ng-model="selectedFormat" ng-options="item for item in formats"></select> 
+
         <textarea name="url" class="form-control" id="url-box" ng-model="url" rows="3" placeholder="Enter URLs (one per line) ..."></textarea>
 
         <span class="input-group-btn">
