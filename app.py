@@ -145,7 +145,8 @@ def index():
 
 @app.route('/formats')
 def get_formats():
-    return json.dumps(app.config['YDL_FORMATS'])
+    return json.dumps(['one', 'two'])
+    #return json.dumps(app.config['YDL_FORMATS'])
 
 
 @app.route('/downloads')

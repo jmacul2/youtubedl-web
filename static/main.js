@@ -9,7 +9,7 @@
         var timeout = "";
         
         $scope.addDownload = function () {
-            $http.post('/add', {'url': $scope.url}).success(function (results) {
+            $http.post('/add', {'url': $scope.url, 'format': $scope.format}).success(function (results) {
                 $log.log(results);
                 $('#url-box').val('');
                 $('#url-box').attr('rows', 1);
@@ -55,16 +55,16 @@
         $scope.getDownloads();
         
         $scope.getFormats();
-        $log.log('got formats');
+        $scope.format = 1;
         $log.log($scope.formats);
         
         $scope.$watch('url', function () {
             $('#url-box').attr('rows', $('#url-box').val().split('\n').length);
         });
 
-        $scope.$watch('selectedFormat', function () {
-            $('#')
-        })
+        //$scope.$watch('format', function () {
+        //    $('#')
+        //})
         
     }])
       .filter('bytes', function() {
