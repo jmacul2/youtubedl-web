@@ -1,3 +1,4 @@
+import os
 import json
 import random
 import time
@@ -19,7 +20,14 @@ app.config.update(
     CELERY_BROKER_URL='redis://localhost:6379',
     CELERY_RESULT_BACKEND='redis://localhost:6379',
     REDIS_URL='redis://localhost:6379/2',
-    YDL_FORMATS=['bestvideo/bestaudio', "bestaudio[ext=m4a]", "bestvideo[ext=mp4][height<=360]+bestaudio/best[height<=360]"]
+    YDL_FORMATS={
+        'best/best': 'bestvideo/bestaudio',
+        '360p': 'bestvideo[ext=mp4][height<=360]+bestaudio/best[height<=360]',
+        '720p': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',
+        'best-audio': 'bestaudio[ext=m4a]',
+    },
+    OUTPUT_DIRECTORY='downloads',
+    YDL_OUTPUT_TEMPLATE='%(title)s-%(id)s.%(ext)s'
 )
 celery = Celery(
     app.name, backend='rpc://', broker=app.config['CELERY_BROKER_URL']
@@ -43,6 +51,8 @@ class Download:
         self.eta = j.get('eta', '')
         self.task_id = j.get('task_id', '')
         self.last_update = j.get('last_update', '')
+        self.format = j.get('format', '')  # set default?
+        self.ydl_format_str = app.config['YDL_FORMATS'].get(self.format, '')
 
         if self.last_update != '':
             timestamp = datetime.strptime(self.last_update, '%Y-%m-%d %H:%M:%S')
@@ -100,7 +110,6 @@ class Download:
                 'tmpfilename'
             ).replace('.part', '').replace('/downloads/', '')
         except Exception as ex:
-            print(ex)
             pass
 
         # Already completed downloads don't have `downloaded_bytes`
@@ -109,6 +118,10 @@ class Download:
         else:
             self.downloaded_bytes = info.get('total_bytes')
 
+        # Remove the directory path from the title
+        if app.config['OUTPUT_DIRECTORY'] in self.title:
+            self.title = self.title.replace(app.config['OUTPUT_DIRECTORY'], '')
+        
         self.total_bytes = info.get('total_bytes', 0)
         self.speed = info.get('_speed_str', '')
         self.status = info.get('status', 'pending')
@@ -122,20 +135,19 @@ def download(id):
     with app.app_context():
         d = Download.find(id)
         opts = {
-            'outtmpl': '/home/michael/Videos/youtube/%(title)s-%(id)s.%(ext)s',
+            'outtmpl': os.path.join(app.config['OUTPUT_DIRECTORY'], d.format, app.config['YDL_OUTPUT_TEMPLATE']),
             'progress_hooks': [d.set_details],
-            'format': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',  # 'bestaudio/best',
+            'format': d.ydl_format_str,
             'no-playlist': True,  # attempt to get only video given. Prevent false positive 'Stuck' by trying to download multiple items in list
         }
         y = YoutubeDL(params=opts)
         try:
             y.download([d.url])
         except DownloadError as ex:
-            pass
             # not sure how to use this catch yet. 
             # Especially since the first video can complete then it tries next in playlist and fails
-            #d.status = 'error'
-            #d.save()
+            d.status = 'error'
+            d.save()
 
 
 @app.route('/')
@@ -145,8 +157,8 @@ def index():
 
 @app.route('/formats')
 def get_formats():
-    return json.dumps(['one', 'two'])
-    #return json.dumps(app.config['YDL_FORMATS'])
+    formats = app.config['YDL_FORMATS'].keys()
+    return json.dumps([f for f in formats])
 
 
 @app.route('/downloads')
@@ -187,12 +199,13 @@ def add_download():
     data = json.loads(request.data.decode())
     count = 0
     cc = 0
+    fmt = data['format']
     for url in data['url'].split('\n'):
         # Check if it exists
         q = Download.find_by_url(url)
-        if q is None and url != '':
+        if (q is None or q.get('format', '') != fmt) and url != '':
             # Store URL
-            d = Download(json.dumps({'url': url, 'title': url}))
+            d = Download(json.dumps({'url': url, 'title': url, 'format': fmt}))
             d = d.save()
 
             # Create task to download
@@ -204,8 +217,6 @@ def add_download():
             count += 1
         else:
             cc += 1
-
-    flash('{} urls added. {} urls skipped'.format(count, cc))
 
     return 'OK', 201
 

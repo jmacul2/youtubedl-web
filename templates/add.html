@@ -1,13 +1,18 @@
 <form role="form" >
-    <div class="input-group">
-        <textarea name="url" class="form-control" id="url-box" ng-model="url" rows="3" placeholder="Enter URLs (one per line) ..."></textarea>
-        
-        <span class="input-group-btn">
-            <button ng-click="addDownload()" class="btn btn-success" style="cursor: pointer;"><span class="glyphicon glyphicon-download-alt"></span></button>
-        </span>
-    </div>
-
-    <div class="input-group">
-        <select name="format" class="form-control" id="format-box" ng-model="format" ng-options="item for item in formats"></select> 
+    <div class="row">
+        <div class="col-md-3">
+            <div class="input-group">
+                <select name="format" class="form-control" id="format-box" ng-model="format" ng-options="item for item in formats"></select> 
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="input-group">
+                <textarea name="url" class="form-control" id="url-box" ng-model="url" rows="3" placeholder="Enter URLs (one per line) ..."></textarea>
+                
+                <span class="input-group-btn">
+                    <button ng-click="addDownload()" class="btn btn-success" style="cursor: pointer;"><span class="glyphicon glyphicon-download-alt"></span></button>
+                </span>
+            </div>
+        </div>
     </div>
 </form>

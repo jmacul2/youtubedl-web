@@ -46,25 +46,20 @@
         
         $scope.getFormats = function () {
             $http.get('/formats').success(function (results) {
+                $scope.format = results[0];
                 $scope.formats = results;
             }).error(function (error) {
                 $log.log(error);
             });
         };
         
-        $scope.getDownloads();
-        
         $scope.getFormats();
-        $scope.format = 1;
-        $log.log($scope.formats);
+        
+        $scope.getDownloads();
         
         $scope.$watch('url', function () {
             $('#url-box').attr('rows', $('#url-box').val().split('\n').length);
         });
-
-        //$scope.$watch('format', function () {
-        //    $('#')
-        //})
         
     }])
       .filter('bytes', function() {
