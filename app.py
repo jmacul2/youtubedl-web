@@ -20,10 +20,10 @@ app.config.update(
     CELERY_RESULT_BACKEND='redis://localhost:6379',
     REDIS_URL='redis://localhost:6379/2',
     YDL_FORMATS={
-        'best/best': 'bestvideo/bestaudio',
-        '360p': 'bestvideo[ext=mp4][height<=360]+bestaudio/best[height<=360]',
-        '720p': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',
-        'best-audio': 'bestaudio[ext=m4a]',
+        'Best': 'bestvideo/bestaudio',
+        '360': 'bestvideo[ext=mp4][height<=360]+bestaudio/best[height<=360]',
+        '720': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',
+        'AudioOnly': 'bestaudio[ext=m4a]',
     },
 )
 celery = Celery(
