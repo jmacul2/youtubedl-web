@@ -12,7 +12,6 @@ from flask import request, flash
 from flask.templating import render_template
 from flask_redis import FlaskRedis
 from youtube_dl.YoutubeDL import YoutubeDL
-from youtube_dl import DownloadError
 
 app = Flask(__name__)
 app.config.update(
@@ -26,8 +25,6 @@ app.config.update(
         '720p': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',
         'best-audio': 'bestaudio[ext=m4a]',
     },
-    OUTPUT_DIRECTORY='downloads',
-    YDL_OUTPUT_TEMPLATE='%(title)s-%(id)s.%(ext)s'
 )
 celery = Celery(
     app.name, backend='rpc://', broker=app.config['CELERY_BROKER_URL']
@@ -51,7 +48,7 @@ class Download:
         self.eta = j.get('eta', '')
         self.task_id = j.get('task_id', '')
         self.last_update = j.get('last_update', '')
-        self.format = j.get('format', '')  # set default?
+        self.format = j.get('format', '')
         self.ydl_format_str = app.config['YDL_FORMATS'].get(self.format, '')
 
         if self.last_update != '':
@@ -117,10 +114,6 @@ class Download:
             self.downloaded_bytes = info.get('downloaded_bytes', 0)
         else:
             self.downloaded_bytes = info.get('total_bytes')
-
-        # Remove the directory path from the title
-        if app.config['OUTPUT_DIRECTORY'] in self.title:
-            self.title = self.title.replace(app.config['OUTPUT_DIRECTORY'], '')
         
         self.total_bytes = info.get('total_bytes', 0)
         self.speed = info.get('_speed_str', '')
@@ -135,19 +128,12 @@ def download(id):
     with app.app_context():
         d = Download.find(id)
         opts = {
-            'outtmpl': os.path.join(app.config['OUTPUT_DIRECTORY'], d.format, app.config['YDL_OUTPUT_TEMPLATE']),
+            'outtmpl': '/downloads/%(title)s-%(id)s-%(resolution)s.%(ext)s',
             'progress_hooks': [d.set_details],
             'format': d.ydl_format_str,
-            'no-playlist': True,  # attempt to get only video given. Prevent false positive 'Stuck' by trying to download multiple items in list
         }
         y = YoutubeDL(params=opts)
-        try:
-            y.download([d.url])
-        except DownloadError as ex:
-            # not sure how to use this catch yet. 
-            # Especially since the first video can complete then it tries next in playlist and fails
-            d.status = 'error'
-            d.save()
+        y.download([d.url])
 
 
 @app.route('/')
