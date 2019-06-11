@@ -86,18 +86,6 @@ class Download:
             if item.get('url') == url:
                 return item
 
-    @staticmethod
-    def find_by_status(status):
-        for result in redis_store.scan_iter('*'):
-            try:
-                item = json.loads(redis_store.get(result))
-            except TypeError:
-                # Result not found
-                return None
-
-            if item.get('status') == status:
-                return item
-
     def delete(self):
         redis_store.delete(self.id)
 
@@ -164,21 +152,37 @@ def get_downloads():
     )
 
 
-@app.route('/downloads/<string:status>')
+@app.route('/downloads/status/<string:status>')
 def get_downloads_status(status):
     result = []
-    enough = 0
-    for i in redis_store.scan_iter('*'):
-        d = Download(redis_store.get(i).decode())
-        if d.status != 'finished':
-            result.append(json.loads(d.to_json()))
-        else:
-            if enough < 5:
-                result.append(json.loads(d.to_json()))
-                enough += 1
+    for result in redis_store.scan_iter('*'):
+        try:
+            item = json.loads(redis_store.get(result))
+        except TypeError:
+            # Result not found
+            return None
+        if item.get('status') == status:
+            result.append(item)
     return json.dumps(
         sorted(result, key=lambda x: (x['last_update']))
     )
+
+
+@app.route('/downloads/format/<string:fmt>')
+def get_downloads_format(fmt):
+    result = []
+    for result in redis_store.scan_iter('*'):
+        try:
+            item = json.loads(redis_store.get(result))
+        except TypeError:
+            # Result not found
+            return None
+        if item.get('format') == fmt:
+            result.append(item)
+    return json.dumps(
+        sorted(result, key=lambda x: (x['last_update']))
+    )
+
 
 @app.route('/add', methods=['POST'])
 def add_download():
