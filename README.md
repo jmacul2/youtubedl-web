@@ -15,7 +15,12 @@ Read more about valid format strings from the [youtube-dl docs](https://github.c
 ## Run in Docker
 
 ```
-docker-compose up --build
+docker build --tag youtubedl .
+docker run -d -p "5000:5000" -v ./downloads:/downloads/ youtubedl
+```
+or
+```
+docker-compose up -d --build
 ```
 
 ## Using the API
