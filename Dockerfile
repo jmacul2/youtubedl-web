@@ -1,7 +1,7 @@
 FROM python:3.6
 MAINTAINER Fran Hermoso <franhp@gmail.com>
 
-RUN apt-get update && apt-get install -y supervisor redis-server phantomjs
+RUN apt-get update && apt-get install -y supervisor redis-server phantomjs ffmpeg
 
 ADD requirements.txt /app/
 RUN pip install -r /app/requirements.txt
