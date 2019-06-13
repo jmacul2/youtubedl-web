@@ -14,10 +14,8 @@ Read more about valid format strings from the [youtube-dl docs](https://github.c
 
 ## Run in Docker
 
-> I haven't set up Docker myself yet. You would have to build first then you can run locally.
-
 ```
-docker run -d -p "5000:5000" -v ./downloads:/downloads/ ??????/youtubedl-web
+docker-compose up --build
 ```
 
 ## Using the API
@@ -26,4 +24,16 @@ docker run -d -p "5000:5000" -v ./downloads:/downloads/ ??????/youtubedl-web
 curl -XPOST -d "url=$url" http://ip:5000/add/
 ```
 
+```
+curl -GET http://ip:5000/downloads
+curl -GET http://ip:5000/downloads/format/<format>
+curl -GET http://ip:5000/downloads/status/<status>
+```
 
+```
+curl -XDELETE http://localho:5000/remove/<id>
+```
+
+```
+curl -XPOST http://localho:5000/remove/<id>
+```

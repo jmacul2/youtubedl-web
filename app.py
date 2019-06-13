@@ -155,9 +155,9 @@ def get_downloads():
 @app.route('/downloads/status/<string:status>')
 def get_downloads_status(status):
     result = []
-    for result in redis_store.scan_iter('*'):
+    for i in redis_store.scan_iter('*'):
         try:
-            item = json.loads(redis_store.get(result))
+            item = json.loads(redis_store.get(i))
         except TypeError:
             # Result not found
             return None
@@ -171,9 +171,9 @@ def get_downloads_status(status):
 @app.route('/downloads/format/<string:fmt>')
 def get_downloads_format(fmt):
     result = []
-    for result in redis_store.scan_iter('*'):
+    for i in redis_store.scan_iter('*'):
         try:
-            item = json.loads(redis_store.get(result))
+            item = json.loads(redis_store.get(i))
         except TypeError:
             # Result not found
             return None
