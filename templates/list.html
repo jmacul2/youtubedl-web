@@ -13,7 +13,7 @@
 </thead>
 <tbody>
 {% raw %}
-  <tr ng-show="!downloads.length"><td colspan="7" style="text-align: center;">No downloads yet!</td></tr>
+  <tr ng-show="!downloads.length"><td colspan="8" style="text-align: center;">No downloads yet!</td></tr>
   <tr ng-repeat="download in downloads">
       <td class="col-md-3">
           {{ download.title | limitTo: 65 }}{{ download.title.length > 65 ? '...' : '' }}
