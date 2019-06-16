@@ -6,13 +6,25 @@ Simple Web UI to queue downloads using the great [YoutubeDL](https://rg3.github.
 
 It can also be used as a very simple REST api
 
-## Configure Formats
+## Configure
 
-In `app.py` there is a dictionary that can be populated with format strings you want to define.
+> cp youtubedl-web.yaml.example youtubedl-web
 
-Read more about valid format strings from the [youtube-dl docs](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#format-selection).
+Modify the file to fit your needs.
+
+Create multiple formats for downloading an audio only file or for selecting 
+different video resolutions. You can also set a unique directory and output 
+template for each format defined.
+
+
+Read more about valid format configurations for youtube-dl [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#format-selection) and valid output templates [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#output-template).
+
 
 ## Run in Docker
+
+> No longer working I believe...
+
+I plan to create new docker files.
 
 ```
 docker-compose up --build
