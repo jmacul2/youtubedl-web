@@ -12,19 +12,14 @@ from flask import request, flash
 from flask.templating import render_template
 from flask_redis import FlaskRedis
 from youtube_dl.YoutubeDL import YoutubeDL
+from config import config, logger
 
 app = Flask(__name__)
 app.config.update(
     SECRET_KEY='our-secret-key',
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379',
+    CELERY_BROKER_URL='redis://localhost:6379/2',
+    CELERY_RESULT_BACKEND='redis://localhost:6379/2',
     REDIS_URL='redis://localhost:6379/2',
-    YDL_FORMATS={
-        'Best': 'bestvideo/bestaudio',
-        '360': 'bestvideo[ext=mp4][height<=360]+bestaudio/best[height<=360]',
-        '720': 'bestvideo[ext=mp4][height<=720]+bestaudio/best[height<=720]',
-        'AudioOnly': 'bestaudio[ext=m4a]',
-    },
 )
 celery = Celery(
     app.name, backend='rpc://', broker=app.config['CELERY_BROKER_URL']
@@ -48,8 +43,12 @@ class Download:
         self.eta = j.get('eta', '')
         self.task_id = j.get('task_id', '')
         self.last_update = j.get('last_update', '')
-        self.format = j.get('format', '')
-        self.ydl_format_str = app.config['YDL_FORMATS'].get(self.format, '')
+        # Set format configuration for the download
+        self.format_index = j.get('format', 0)
+        self.format = config.FORMATS[self.format_index]['name']
+        self.ydl_format_str = config.FORMATS[self.format_index]['ydl_format']
+        self.ydl_template = config.FORMATS[self.format_index]['template']
+        self.download_path = config.FORMATS[self.format_index]['path']
 
         if self.last_update != '':
             timestamp = datetime.strptime(self.last_update, '%Y-%m-%d %H:%M:%S')
@@ -102,7 +101,7 @@ class Download:
             self.downloaded_bytes = info.get('downloaded_bytes', 0)
         else:
             self.downloaded_bytes = info.get('total_bytes')
-        
+
         self.total_bytes = info.get('total_bytes', 0)
         self.speed = info.get('_speed_str', '')
         self.status = info.get('status', 'pending')
@@ -115,8 +114,12 @@ class Download:
 def download(id):
     with app.app_context():
         d = Download.find(id)
+        from celery.contrib import rdb
+        #rdb.set_trace()
+        print(id)
+        print(d.id, d.url, 'd')
         opts = {
-            'outtmpl': '/downloads/%(title)s-%(id)s-%(resolution)s.%(ext)s',
+            'outtmpl': d.download_path + d.ydl_template,
             'progress_hooks': [d.set_details],
             'format': d.ydl_format_str,
         }
@@ -131,8 +134,7 @@ def index():
 
 @app.route('/formats')
 def get_formats():
-    formats = app.config['YDL_FORMATS'].keys()
-    return json.dumps([f for f in formats])
+    return json.dumps([f['name'] for f in config.FORMATS])
 
 
 @app.route('/downloads')
