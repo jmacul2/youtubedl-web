@@ -47,7 +47,7 @@
           <span ng-if="download.stuck" class="label label-danger">stuck</span>
       </td>
 
-      <td class="col-md-1">{{ download.format }}</td>
+      <td class="col-md-1">{{ download.format['name'] }}</td>
       
       <td class="col-md-1"><span ng-if="!download.stuck">{{ download.speed }}</span></td>
       <td class="col-md-1">

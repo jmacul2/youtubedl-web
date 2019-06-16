@@ -5,7 +5,7 @@ import yaml
 import defaults
 
 CONFIG_FILENAME = 'youtubedl-web.yaml'
-CONFIG_ENV_VAR = 'YOUTUBEDL_WEB_ENV'
+CONFIG_ENV_VAR = 'YOUTUBEDL_WEB'
 LOGGER_NAME = 'youtubedl-web'
 
 config = None
@@ -121,8 +121,8 @@ def initialize(*args, **kwargs):
 def check_config():
     global config
     
-    if not os.path.exists(config.DOWNLOAD_PATH):
-        raise RuntimeError('The default download path is not a directory: %s.' % config.DOWNLOAD_PATH)
+    if not os.path.exists(config.DEFAULT_DOWNLOAD_PATH):
+        raise RuntimeError('The default download path is not a directory: %s.' % config.DEFAULT_DOWNLOAD_PATH)
 
     if len(config.FORMATS) == 0:
         raise RuntimeError('Please define at least one format in the configuration file.')
@@ -130,14 +130,15 @@ def check_config():
     for format in config.FORMATS:
         if format.get('path', False) and not os.path.exists(format['path']):
             raise RuntimeError('The download path is not a directory: %s.' % format['path'])
-        else:
-            format['path'] = config.DOWNLOAD_PATH
+        
+        if not format.get('path', False):
+            format['path'] = config.DEFAULT_DOWNLOAD_PATH
 
         if not format.get('ydl_format', False):
             raise RuntimeError('The YoutubeDL format string is missing for %s.' % format['name'])
 
         if not format.get('template', False):
-            format['template'] = config.OUTPUT_TEMPLATE
+            format['template'] = config.DEFAULT_OUTPUT_TEMPLATE
 
 try:
     initialize()

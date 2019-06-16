@@ -1,4 +1,6 @@
-download_path: ./downloads/
+debug: 1
+
+default_download_path: ./downloads/
 
 formats:
     - name: Worst

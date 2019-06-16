@@ -16,10 +16,10 @@ from config import config, logger
 
 app = Flask(__name__)
 app.config.update(
-    SECRET_KEY='our-secret-key',
-    CELERY_BROKER_URL='redis://localhost:6379/2',
-    CELERY_RESULT_BACKEND='redis://localhost:6379/2',
-    REDIS_URL='redis://localhost:6379/2',
+    SECRET_KEY=config.SECRET_KEY,
+    CELERY_BROKER_URL=config.CELERY_BROKER_URL,
+    CELERY_RESULT_BACKEND=config.CELERY_RESULT_BACKEND,
+    REDIS_URL=config.REDIS_URL,
 )
 celery = Celery(
     app.name, backend='rpc://', broker=app.config['CELERY_BROKER_URL']
@@ -30,8 +30,12 @@ redis_store = FlaskRedis(app)
 class Download:
     def __init__(self, json_content):
         try:
+            # hack of the day
+            if isinstance(json_content, bytes):
+                json_content = json_content.decode()
             j = json.loads(json_content)
         except TypeError:
+            logger.warning('json_content provided to Download class failed to load')
             j = {}
         self.id = j.get('id', '')
         self.url = j.get('url', '')
@@ -43,12 +47,7 @@ class Download:
         self.eta = j.get('eta', '')
         self.task_id = j.get('task_id', '')
         self.last_update = j.get('last_update', '')
-        # Set format configuration for the download
-        self.format_index = j.get('format', 0)
-        self.format = config.FORMATS[self.format_index]['name']
-        self.ydl_format_str = config.FORMATS[self.format_index]['ydl_format']
-        self.ydl_template = config.FORMATS[self.format_index]['template']
-        self.download_path = config.FORMATS[self.format_index]['path']
+        self.format = j.get('format', '')
 
         if self.last_update != '':
             timestamp = datetime.strptime(self.last_update, '%Y-%m-%d %H:%M:%S')
@@ -65,7 +64,7 @@ class Download:
 
     def save(self):
         if self.id == '':
-            self.id = int(time.time() * 1000) + random.randint(0, 999)
+            self.id = 'ydl_{}'.format(int(time.time() * 1000) + random.randint(0, 999))
         redis_store.set(self.id, self.to_json())
         return self
 
@@ -75,7 +74,8 @@ class Download:
 
     @staticmethod
     def find_by_url(url):
-        for result in redis_store.scan_iter('*'):
+        logger.debug('find by url: {}'.format(url))
+        for result in redis_store.scan_iter('ydl_*'):
             try:
                 item = json.loads(redis_store.get(result))
             except TypeError:
@@ -92,7 +92,7 @@ class Download:
         try:
             self.title = info.get(
                 'tmpfilename'
-            ).replace('.part', '').replace('/downloads/', '')
+            ).replace('.part', '').replace(self.format['path'], '')
         except Exception as ex:
             pass
 
@@ -114,14 +114,10 @@ class Download:
 def download(id):
     with app.app_context():
         d = Download.find(id)
-        from celery.contrib import rdb
-        #rdb.set_trace()
-        print(id)
-        print(d.id, d.url, 'd')
         opts = {
-            'outtmpl': d.download_path + d.ydl_template,
+            'outtmpl': d.format['path'] + d.format['template'],
             'progress_hooks': [d.set_details],
-            'format': d.ydl_format_str,
+            'format': d.format['ydl_format'],
         }
         y = YoutubeDL(params=opts)
         y.download([d.url])
@@ -141,7 +137,7 @@ def get_formats():
 def get_downloads():
     result = []
     enough = 0
-    for i in redis_store.scan_iter('*'):
+    for i in redis_store.scan_iter('ydl_*'):
         d = Download(redis_store.get(i).decode())
         if d.status != 'finished':
             result.append(json.loads(d.to_json()))
@@ -157,7 +153,7 @@ def get_downloads():
 @app.route('/downloads/status/<string:status>')
 def get_downloads_status(status):
     result = []
-    for i in redis_store.scan_iter('*'):
+    for i in redis_store.scan_iter('ydl_*'):
         try:
             item = json.loads(redis_store.get(i))
         except TypeError:
@@ -173,7 +169,7 @@ def get_downloads_status(status):
 @app.route('/downloads/format/<string:fmt>')
 def get_downloads_format(fmt):
     result = []
-    for i in redis_store.scan_iter('*'):
+    for i in redis_store.scan_iter('ydl_*'):
         try:
             item = json.loads(redis_store.get(i))
         except TypeError:
@@ -191,7 +187,7 @@ def add_download():
     data = json.loads(request.data.decode())
     count = 0
     cc = 0
-    fmt = data['format']
+    fmt = config.FORMATS[int(data['format'])]
     for url in data['url'].split('\n'):
         # Check if it exists
         q = Download.find_by_url(url)

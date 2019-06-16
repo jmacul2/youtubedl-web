@@ -1,8 +1,10 @@
 DEBUG = 1
 
-DOWNLOAD_PATH = '/downloads/'
+SECRET_KEY = 'super-secret-key'
 
-OUTPUT_TEMPLATE = '%(title)s-%(id)s.%(ext)s'
+DEFAULT_DOWNLOAD_PATH = '/downloads/'
+
+DEFAULT_OUTPUT_TEMPLATE = '%(title)s-%(id)s.%(ext)s'
 
 FORMATS = [
     {
@@ -10,3 +12,9 @@ FORMATS = [
         'ydl_format': 'bestvideo+bestaudio',
     }
 ]
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+REDIS_URL = 'redis://localhost:6379/1'

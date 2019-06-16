@@ -1,0 +1,20 @@
+debug = 1
+
+formats:
+    - name: Worst
+      ydl_format: worst
+
+    - name: '360'
+      ydl_format: bestvideo[height=360]+bestaudio
+      path: ./downloads/videos/
+      template: '%(title)s-%(id)s-%(resolution)s.%(ext)s'
+
+    - name: AudioOnly
+      ydl_format: bestaudio
+      path: ./downloads/songs/
+
+# optional
+default_download_path: ./downloads/
+
+# optional
+default_output_template: '%(title)s.%(ext)s'
