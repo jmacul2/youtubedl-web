@@ -52,10 +52,10 @@ curl -XPOST http://localho:5000/remove/<id>
 
 ## Roadmap
 
-[checkbox:checked] Download Format Selection
-[checkbox:unchecked] Proper docker-compose deployment
-[checkbox:unchecked] Download file from browser
-[checkbox:unchecked] Watch output directories for removed files then remove item from store
+[x] Download Format Selection
+[ ] Proper docker-compose deployment
+[ ] Download file from browser
+[ ] Watch output directories for removed files then remove item from store
 
 ### Development Ideas
 
@@ -64,5 +64,5 @@ another project should be started that uses this project simply as
 an API for downloading. Perhaps an RSS feed already exists that 
 can be read from or use Youtube API... but that seems overkill.
 
-[checkbox:unchecked] Watch a public youtube playlist for changes then download
-[checkbox:unchecked] Watch youtube channel for updates and then download
+[ ] Watch a public youtube playlist for changes then download
+[ ] Watch youtube channel for updates and then download
