@@ -7,7 +7,7 @@ __pycache__/
 *.so
 
 # Local config file
-youtubedl-web.yaml
+*.yaml
 
 # Distribution / packaging
 .Python
