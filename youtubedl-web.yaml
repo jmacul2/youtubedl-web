@@ -1,0 +1,17 @@
+debug: 1
+
+default_download_path: /media/external/youtube/
+
+formats:
+    - name: '360'
+      ydl_format: bestvideo[height=360]+bestaudio
+      template: '%(title)s-%(id)s-%(resolution)s.%(ext)s'
+
+    - name: '720'
+      ydl_format: bestvideo[height=720]+bestaudio
+      template: '%(title)s-%(id)s-%(resolution)s.%(ext)s'
+
+    - name: AudioOnly
+      ydl_format: bestaudio
+
+
