@@ -56,6 +56,7 @@ curl -XPOST http://localho:5000/remove/<id>
 - [x] Extended API
 - [x] Download Format Selection
 - [ ] Proper docker-compose deployment
+- [ ] Alert on frontend when `youtube-dl` fails (likely needs updating)
 - [ ] Download file from browser
 - [ ] Watch output directories for removed files then remove item from store
 
