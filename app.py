@@ -120,7 +120,11 @@ def download(id):
             'format': d.format['ydl_format'],
         }
         y = YoutubeDL(params=opts)
-        y.download([d.url])
+        try:
+            y.download([d.url])
+        except:
+            # TODO catch YDL error for missing format or other -> mark item failed
+            pass
 
 
 @app.route('/')
@@ -209,7 +213,7 @@ def add_download():
     return 'OK', 201
 
 
-@app.route('/remove/<int:id>', methods=['DELETE'])
+@app.route('/remove/<id>', methods=['DELETE'])
 def remove_download(id):
     d = Download.find(id)
     task = AsyncResult(d.task_id)
@@ -223,7 +227,7 @@ def remove_download(id):
     return 'OK', 200
 
 
-@app.route('/restart/<int:id>', methods=['POST'])
+@app.route('/restart/<id>', methods=['POST'])
 def restart_download(id):
     new = download.apply_async([id], countdown=5)
     existing = Download.find(id)
