@@ -6,6 +6,9 @@ DEFAULT_DOWNLOAD_PATH = '/downloads/'
 
 DEFAULT_OUTPUT_TEMPLATE = '%(title)s-%(id)s.%(ext)s'
 
+DOWNLOAD_START = None
+DOWNLOAD_STOP = None
+
 FORMATS = [
     {
         'name': 'Best',

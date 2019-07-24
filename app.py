@@ -3,10 +3,10 @@ import json
 import random
 import time
 
+from datetime import datetime, timedelta
 from celery import Celery
 from celery.result import AsyncResult
 from celery.worker.control import revoke
-from datetime import datetime, timedelta
 from flask import Flask
 from flask import request, flash
 from flask.templating import render_template
@@ -110,8 +110,23 @@ class Download:
         self.save()
 
 
-@celery.task
-def download(id):
+@celery.task(bind=True, max_retries=None)
+def download(self, id):
+    # TODO clean up current hour check
+    now = datetime.now()
+    now_hour = now.hour
+    dl_start_hr = config.DOWNLOAD_START
+    dl_stop_hr = config.DOWNLOAD_STOP
+    if dl_start_hr > dl_stop_hr:
+        is_download_hours = dl_start_hr < now_hour or now_hour < dl_stop_hr
+    else:
+        is_download_hours = dl_start_hr < now_hour < dl_stop_hr
+    if not is_download_hours:
+        eta = datetime(now.year, now.month, now.day, dl_start_hr, 0, 0)
+        if eta < now:
+            eta = eta + timedelta(days=1)
+        raise self.retry(eta=eta)
+
     with app.app_context():
         d = Download.find(id)
         opts = {

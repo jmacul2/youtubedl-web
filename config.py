@@ -120,7 +120,7 @@ def initialize(*args, **kwargs):
 
 def check_config():
     global config
-    
+
     if not os.path.exists(config.DEFAULT_DOWNLOAD_PATH):
         raise RuntimeError('The default download path is not a directory: %s.' % config.DEFAULT_DOWNLOAD_PATH)
 
