@@ -110,21 +110,31 @@ class Download:
         self.save()
 
 
+def within_allowed_hours():
+    # Check that current time is within allowed hours
+    if not (config.DOWNLOAD_START and config.DOWNLOAD_STOP):
+        return True
+    now = datetime.now()
+    start_hour = config.DOWNLOAD_START
+    stop_hour = config.DOWNLOAD_STOP
+    if start_hour > stop_hour:
+        allow_downloads = start_hour < now.hour or now.hour < stop_hour
+    else:
+        allow_downloads = start_hour < now.hour < stop_hour
+    if allow_downloads:
+        return True
+    return False
+        
+
 @celery.task(bind=True, max_retries=None)
 def download(self, id):
-    # TODO clean up current hour check
-    now = datetime.now()
-    now_hour = now.hour
-    dl_start_hr = config.DOWNLOAD_START
-    dl_stop_hr = config.DOWNLOAD_STOP
-    if dl_start_hr > dl_stop_hr:
-        is_download_hours = dl_start_hr < now_hour or now_hour < dl_stop_hr
-    else:
-        is_download_hours = dl_start_hr < now_hour < dl_stop_hr
-    if not is_download_hours:
-        eta = datetime(now.year, now.month, now.day, dl_start_hr, 0, 0)
+    
+    if not within_allowed_hours():
+        now = datetime.now()
+        eta = datetime(now.year, now.month, now.day, config.DOWNLOAD_START, 0, 0)
         if eta < now:
             eta = eta + timedelta(days=1)
+        eta = eta + timedelta(seconds=random.randint(300))
         raise self.retry(eta=eta)
 
     with app.app_context():
