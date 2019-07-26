@@ -55,7 +55,7 @@ curl -XPOST http://localho:5000/remove/<id>
 - [x] Config file
 - [x] Extended API
 - [x] Download Format Selection
-- [ ] Download hours (I have slow internet connection)
+- [x] Download hours (I have slow internet connection)
 - [ ] Proper docker-compose deployment
 - [ ] Alert on frontend when `youtube-dl` fails (likely needs updating)
 - [ ] Download file from browser

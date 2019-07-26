@@ -16,6 +16,10 @@ formats:
       path: ./downloads/songs/
 
 # optional
+#download_start=22
+#download_stop=4
+
+# optional
 default_download_path: /downloads/
 
 # optional
