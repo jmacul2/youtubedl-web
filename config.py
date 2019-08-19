@@ -140,7 +140,7 @@ def check_config():
         if not format.get('template', False):
             format['template'] = config.DEFAULT_OUTPUT_TEMPLATE
 
-    if not (config.DOWNLOAD_START and config.DOWNLOAD_STOP):
+    if (config.DOWNLOAD_START or config.DOWNLOAD_STOP):
         raise RuntimeError('The download start and stop times must be both set or both empty')
 
 try:

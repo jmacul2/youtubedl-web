@@ -2,6 +2,8 @@ DEBUG = 1
 
 SECRET_KEY = 'super-secret-key'
 
+TITLE = 'YoutubeDL Server'
+
 DEFAULT_DOWNLOAD_PATH = '/downloads/'
 
 DEFAULT_OUTPUT_TEMPLATE = '%(title)s-%(id)s.%(ext)s'
