@@ -6,13 +6,25 @@ Simple Web UI to queue downloads using the great [YoutubeDL](https://rg3.github.
 
 It can also be used as a very simple REST api
 
-## Configure Formats
+## Configure
 
-In `app.py` there is a dictionary that can be populated with format strings you want to define.
+> cp youtubedl-web.yaml.example youtubedl-web.yaml
 
-Read more about valid format strings from the [youtube-dl docs](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#format-selection).
+Modify the file to fit your needs.
+
+Create multiple formats for downloading an audio only file or for selecting 
+different video resolutions. You can also set a unique directory and output 
+template for each format defined.
+
+
+Read more about valid format configurations for youtube-dl [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#format-selection) and valid output templates [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#output-template).
+
 
 ## Run in Docker
+
+> No longer working I believe... looking for help here.
+
+I plan to create new docker files.
 
 ```
 docker build --tag youtubedl .
@@ -42,3 +54,24 @@ curl -XDELETE http://localho:5000/remove/<id>
 ```
 curl -XPOST http://localho:5000/remove/<id>
 ```
+
+## Roadmap
+
+- [x] Config file
+- [x] Extended API
+- [x] Download Format Selection
+- [x] Download hours (I have slow internet connection)
+- [ ] Proper docker-compose deployment
+- [ ] Alert on frontend when `youtube-dl` fails (likely needs updating)
+- [ ] Download file from browser
+- [ ] Watch output directories for removed files then remove item from store
+
+### Development Ideas
+
+I am not sure if these ideas should be built into this project or if 
+another project should be started that uses this project simply as 
+an API for downloading. Perhaps an RSS feed already exists that 
+can be read from or use Youtube API... but that seems overkill.
+
+- [ ] Watch a public youtube playlist for changes then download
+- [ ] Watch youtube channel for updates and then download

@@ -3,8 +3,17 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# VSCode
+.vscode/
+
+# Celeryd Daemonization
+celery.config
+
 # C extensions
 *.so
+
+# Local config file
+*.yaml
 
 # Distribution / packaging
 .Python

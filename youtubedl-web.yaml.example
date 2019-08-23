@@ -1,0 +1,26 @@
+debug = 1
+
+formats:   
+    - name: HD
+      ydl_format: mp4[height=1080]+m4a/bestvideo[height<=?1080]+m4a/bestvideo[height<=?1080]+bestaudio/best
+      path: /downloads/videos/
+      template: '%(title)s-%(id)s-%(resolution)s.%(ext)s'
+
+    - name: '360'
+      ydl_format: bestvideo[height=360]+bestaudio/bestvideo[height<=?360]+bestaudio
+      path: /downloads/videos/
+      template: '%(title)s-%(id)s-%(resolution)s.%(ext)s'
+
+    - name: AudioOnly
+      ydl_format: bestaudio
+      path: ./downloads/songs/
+
+# optional
+#download_start=22
+#download_stop=4
+
+# optional
+default_download_path: /downloads/
+
+# optional
+default_output_template: '%(title)s.%(ext)s'

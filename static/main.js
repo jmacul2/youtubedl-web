@@ -46,8 +46,8 @@
         
         $scope.getFormats = function () {
             $http.get('/formats').success(function (results) {
-                $scope.format = results[0];
                 $scope.formats = results;
+                $scope.format = 0;
             }).error(function (error) {
                 $log.log(error);
             });
