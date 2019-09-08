@@ -19,6 +19,10 @@ template for each format defined.
 
 Read more about valid format configurations for youtube-dl [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#format-selection) and valid output templates [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#output-template).
 
+## Multiple Workers on the Network
+
+Create a network drive to store downloaded files. On each worker mount the 
+storage in the local `./downloads/` directory so that all workers can save to it.
 
 ## Run in Docker
 
