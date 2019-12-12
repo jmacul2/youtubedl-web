@@ -121,9 +121,7 @@ def within_allowed_hours():
         allow_downloads = start_hour < now.hour or now.hour < stop_hour
     else:
         allow_downloads = start_hour < now.hour < stop_hour
-    if allow_downloads:
-        return True
-    return False
+    return allow_downloads
         
 
 @celery.task(bind=True, max_retries=None)
