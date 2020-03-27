@@ -1,0 +1,78 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Progress</th>
+      <th>Status</th>
+      <th>Format</th>
+      <th>Speed</th>
+      <th>ETA</th>
+      <th>Extra</th>
+      <th>Options</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% raw %}
+    <tr ng-show="!downloads.length"><td colspan="8" style="text-align: center;">No downloads yet!</td></tr>
+    <tr ng-repeat="download in downloads">
+      <td class="col-md-3">
+        {{ download.title | limitTo: 65 }}{{ download.title.length > 65 ? '...' : '' }}
+      </td>
+
+      <td class="col-md-3">
+      <div class="progress" ng-if="download.status != 'pending'">
+        <div role="progressbar" class="progress-bar"
+          ng-class="{active: download.status == 'downloading', 'progress-bar-striped': download.status == 'downloading' && !download.stuck, 'progress-bar-success': download.status == 'finished', 'progress-bar-danger': download.status == 'downloading' && download.stuck}"
+          aria-valuenow="{{ (download.downloaded_bytes * 100) / download.total_bytes }}" aria-valuemin="0" aria-valuemax="100"
+          style="min-width: 2em; width: {{ (download.downloaded_bytes * 100) / download.total_bytes | number:0}}%;"
+        >
+          {{ (download.downloaded_bytes * 100) / download.total_bytes | number:0 }}%
+        </div>
+      </div>
+      </td>
+
+      <td class="col-md-1">
+        <span class="label"
+          ng-if="!download.stuck"
+          ng-class="{
+            'label-warning': download.status == 'pending',
+            'label-info': download.status == 'downloading',
+            'label-success': download.status == 'finished',
+            'label-secondary': download.status == 'error',
+          }"
+        >
+          {{ download.status }}
+        </span>
+
+        <span ng-if="download.stuck" class="label label-danger">stuck</span>
+      </td>
+
+      <td class="col-md-1">{{ download.format['name'] }}</td>
+      
+      <td class="col-md-1"><span ng-if="!download.stuck">{{ download.speed }}</span></td>
+      <td class="col-md-1">
+        <span ng-if="!download.stuck">{{ download.eta }}</span>
+      </td>
+      <td class="col-md-1">
+        <span class="label label-small label-info" ng-if="download.status == 'downloading'">{{ download.last_update }}</span>
+        <span class="label label-info" ng-if="download.status == 'downloading'">{{ download.downloaded_bytes| bytes }} / {{ download.total_bytes | bytes }}</span>
+        <span class="label label-success" ng-if="download.status == 'finished'">{{ download.total_bytes | bytes }}</span>
+      </td>
+
+      <td class="col-md-1">
+        <button class="btn btn-danger btn-xs" ng-click="deleteDownload(download.id)">
+          <span class="glyphicon glyphicon-trash"></span>
+        </button>
+        <button class="btn btn-primary btn-xs" ng-click="restartDownload(download.id)">
+          <span class="glyphicon glyphicon-repeat"></span>
+        </button>
+        <a href="{{download.url}}">
+          <span class="glyphicon glyphicon-new-window"></span>
+        </a>
+      </td>
+
+    </tr>
+  {% endraw %}
+  </tbody>
+</table>
+    

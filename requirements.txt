@@ -1,5 +1,11 @@
 flask
-celery
-Flask-Redis==0.3.0
+flask-cors
+python-dotenv
+gunicorn
+
+flask-sqlalchemy
+celery[redis]
 youtube-dl
-pyyaml
+
+# dev
+pytest

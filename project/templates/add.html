@@ -1,0 +1,29 @@
+<form role="form">
+  <div class="form-row row">
+    <div class="form-group col-md-3">
+      <div class="input-group">
+        <span class="input-group-addon" id="format-addon1">Format</span>
+        <select name="format" class="form-control" id="format-box" ng-model="format" ng-options="item.name as item.name for item in formats"></select> 
+      </div>
+    </div>
+    <div class="form-group col-md-9">
+      <div class="input-group">
+        <span class="input-group-addon" id="path-addon1">Path</span>
+        <select name="path" class="form-control" id="path-box" ng-model="path" ng-options="item as item for item in paths"></select>
+        <span class="input-group-addon" id="extended-path-addon1">/</span>
+        <input type="text" class="form-control" id="extended-path-box" ng-model="extendedPath" />
+      </div>
+    </div>
+  </div>
+  <div class="form-row row">
+    <div class="form-group col-md-12">
+      <div class="input-group">
+        <textarea name="url" class="form-control" id="url-box" ng-model="url" rows="3" placeholder="Enter URLs (one per line) ..."></textarea>
+        
+        <span class="input-group-btn">
+          <button ng-click="addDownload()" class="btn btn-success" style="cursor: pointer;"><span class="glyphicon glyphicon-download-alt"></span></button>
+        </span>
+      </div>
+    </div>
+  </div>
+</form>
