@@ -3,6 +3,8 @@ import json
 from enum import IntEnum
 from datetime import datetime
 
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from project import conf, db
 from project.common.utils import session_scope
 

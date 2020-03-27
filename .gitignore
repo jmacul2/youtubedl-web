@@ -8,3 +8,5 @@ downloads/
 *.db
 
 celerybeat-schedule
+
+.env

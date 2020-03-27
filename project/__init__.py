@@ -36,6 +36,19 @@ def create_app():
     from project.commands import cli
     app.cli.add_command(cli)
 
+    # register error handlers
+    from project.common import exceptions
+    from project.common import error_handlers
+    app.register_error_handler(exceptions.InvalidPayload, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.BusinessException, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.UnauthorizedException, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.ForbiddenException, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.NotFoundException, error_handlers.handle_exception)
+    if not app.config['DEBUG']:
+        # Thise handlers hide errors that help with debuging
+        app.register_error_handler(exceptions.ServerErrorException, error_handlers.handle_exception)
+        app.register_error_handler(Exception, error_handlers.handle_general_exception)
+
     return app
 
 
