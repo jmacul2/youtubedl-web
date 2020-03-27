@@ -39,17 +39,17 @@ def add():
     if not data:
         raise InvalidPayload(message='Payload missing')
 
-    urls = data.get('url').split('\n')
+    urls = data.get('url', '').split('\n')
     name = data.get('format')
     path = data.get('path')
     if path not in get_download_paths():
         raise InvalidPayload(message='path is not valid')
-    extendedPath = secure_filename(data.get('extendedPath'))
+    extendedPath = secure_filename(data.get('extendedPath', ''))
     if extendedPath:
         path = os.path.join(path, extendedPath)
 
     df = DownloadFormat.query.filter_by(name=name).first()
-    if df and path:
+    if df and urls and path:
         for url in urls:
             existing = Download.query.filter_by(url=url).first()
             if existing is None and url != '':
@@ -59,6 +59,7 @@ def add():
                     session.add(dl)
                 # Create the download task
                 from project.tasks import ydl_download
+                import pdb; pdb.set_trace()
                 task = ydl_download.delay(dl.id)
                 with session_scope(db.session) as session:
                     dl.task_id = task.id
