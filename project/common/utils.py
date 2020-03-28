@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 
 from project import conf
-from project.common.exceptions import ServerErrorException
+from project.common.exceptions import APIException, ServerErrorException
 
 
 @contextmanager

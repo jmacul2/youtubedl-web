@@ -27,14 +27,27 @@ def create_app():
     db.init_app(app)
 
     # register blueprints
-    from project.views.home import blueprint as home_bp
+    from project.views.index import blueprint as index_bp
     from project.views.api import blueprint as api_bp
-    app.register_blueprint(home_bp)
+    app.register_blueprint(index_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
 
     # register commands
     from project.commands import cli
     app.cli.add_command(cli)
+
+    # register error handlers
+    from project.common import exceptions
+    from project.common import error_handlers
+    app.register_error_handler(exceptions.InvalidPayload, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.BusinessException, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.UnauthorizedException, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.ForbiddenException, error_handlers.handle_exception)
+    app.register_error_handler(exceptions.NotFoundException, error_handlers.handle_exception)
+    if not app.config['DEBUG']:
+        # Thise handlers hide errors that help with debuging
+        app.register_error_handler(exceptions.ServerErrorException, error_handlers.handle_exception)
+        app.register_error_handler(Exception, error_handlers.handle_general_exception)
 
     return app
 

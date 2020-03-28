@@ -22,7 +22,12 @@
       <td class="col-md-3">
       <div class="progress" ng-if="download.status != 'pending'">
         <div role="progressbar" class="progress-bar"
-          ng-class="{active: download.status == 'downloading', 'progress-bar-striped': download.status == 'downloading' && !download.stuck, 'progress-bar-success': download.status == 'finished', 'progress-bar-danger': download.status == 'downloading' && download.stuck}"
+          ng-class="{
+            'active': download.status == 'downloading', 
+            'progress-bar-striped': download.status == 'downloading' && !download.stuck, 
+            'progress-bar-success': download.status == 'finished', 
+            'progress-bar-danger': download.status == 'downloading' && download.stuck
+          }"
           aria-valuenow="{{ (download.downloaded_bytes * 100) / download.total_bytes }}" aria-valuemin="0" aria-valuemax="100"
           style="min-width: 2em; width: {{ (download.downloaded_bytes * 100) / download.total_bytes | number:0}}%;"
         >
@@ -38,16 +43,16 @@
             'label-warning': download.status == 'pending',
             'label-info': download.status == 'downloading',
             'label-success': download.status == 'finished',
-            'label-secondary': download.status == 'error',
+            'label-danger': download.status == 'error',
           }"
         >
           {{ download.status }}
         </span>
-
+        
         <span ng-if="download.stuck" class="label label-danger">stuck</span>
       </td>
 
-      <td class="col-md-1">{{ download.format['name'] }}</td>
+      <td class="col-md-1">{{ download.df.name }}</td>
       
       <td class="col-md-1"><span ng-if="!download.stuck">{{ download.speed }}</span></td>
       <td class="col-md-1">
@@ -66,7 +71,7 @@
         <button class="btn btn-primary btn-xs" ng-click="restartDownload(download.id)">
           <span class="glyphicon glyphicon-repeat"></span>
         </button>
-        <a href="{{download.url}}">
+        <a href="{{ download.url }}">
           <span class="glyphicon glyphicon-new-window"></span>
         </a>
       </td>

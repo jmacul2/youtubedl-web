@@ -1,8 +1,9 @@
 from datetime import datetime
 from youtube_dl.YoutubeDL import YoutubeDL
+from youtube_dl.utils import DownloadError
 
 from project import app, celery
-from project.models import Download
+from project.models import Download, DownloadStatus
 
 
 @celery.task(bind=True, max_retries=None)
@@ -10,9 +11,14 @@ def ydl_download(self, download_id):
     with app.app_context():
         d = Download.query.filter_by(id=download_id).first()
         opts = {
+            'noplaylist': not d.playlist,
             'outtmpl': d.outtmpl,
             'progress_hooks': [d.progress_hook],
-            'format': d.ydl_format,
+            'format': d.df.ydl_format,
         }
         y = YoutubeDL(params=opts)
-        y.download([d.url])
+        try:
+            y.download([d.url])
+        except DownloadError:
+            d.status = DownloadStatus.ERROR
+            d.save()

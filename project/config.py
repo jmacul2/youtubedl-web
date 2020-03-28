@@ -18,6 +18,7 @@ class BaseConfig:
     TOKEN_EMAIL_EXPIRATION_DAYS = 1
     TOKEN_EMAIL_EXPIRATION_SECONDS = 0
     CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
+    CELERY_DEFAULT_QUEUE = os.environ.get('CELERY_DEFAULT_QUEUE', 'celery')
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = os.environ.get('MAIL_PORT')
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS').lower() == 'true'
