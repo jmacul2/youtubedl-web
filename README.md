@@ -6,15 +6,19 @@ Simple Web UI to queue downloads using the great [YoutubeDL](https://rg3.github.
 
 ## Configure
 
-> cp .env.template .env
+```
+cp .env.template .env
+```
 
 Modify the file to fit your needs.
 
 Create formats to download just an audio only file or for selecting 
 specific video resolutions/formats.
 
-> python manage.py recreate-db
-> python manage.py format add
+```
+python manage.py recreate-db
+python manage.py format add
+```
 
 Read more about valid format configurations for youtube-dl [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#format-selection) and valid output templates [here](https://github.com/ytdl-org/youtube-dl/blob/master/README.md#output-template).
 
@@ -22,11 +26,15 @@ Read more about valid format configurations for youtube-dl [here](https://github
 
 In one terminal start the webserver process
 
-> python manange.py run
+```
+python manange.py run
+```
 
 In a second terminal start the download task process
 
-> python manage.py celery-worker
+```
+python manage.py celery-worker
+```
 
 ## Multiple Workers on the Network
 
