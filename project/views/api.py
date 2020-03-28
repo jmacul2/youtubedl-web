@@ -17,7 +17,7 @@ blueprint = Blueprint('api', __name__, template_folder=None)
 def get_download_paths():
     paths = []
     base_dir = conf.get('BASE_DOWNLOAD_PATH')
-    base_length = len(base_dir)
+    base_length = len(base_dir) + 1  # strip leading slash
     for root, subdirs, files in os.walk(base_dir):
         paths.append(root[base_length:])
     return paths
@@ -41,6 +41,7 @@ def add_download():
 
     urls = data.get('url', '').split('\n')
     name = data.get('format')
+    playlist = data.get('playlist', False)
 
     # Prepare the download path
     path = data.get('path')
@@ -49,9 +50,8 @@ def add_download():
     extendedPath = secure_filename(data.get('extendedPath', ''))
     if extendedPath:
         path = os.path.join(path, extendedPath)
-    path = conf.get('BASE_DOWNLOAD_PATH') + path  # TODO must be better way
+    path = os.path.join(conf.get('BASE_DOWNLOAD_PATH'), path)
     if not os.path.exists(path):
-        import pdb; pdb.set_trace()
         os.makedirs(path)
 
     df = DownloadFormat.query.filter_by(name=name).first()
@@ -61,7 +61,7 @@ def add_download():
             if existing is None and url != '':
                 # Save the download
                 with session_scope(db.session) as session:
-                    dl = Download(url, path, df)
+                    dl = Download(url, path, playlist, df)
                     session.add(dl)
                 # Create the download task
                 from project.tasks import ydl_download

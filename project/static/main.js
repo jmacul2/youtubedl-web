@@ -2,14 +2,24 @@
 
   'use strict';
 
-  angular.module('DownloaderApp', [])
+  angular.module('DownloaderApp', ['ui.toggle'])
 
   .controller('DownloaderController', ['$scope', '$log', '$http', '$timeout',
     function($scope, $log, $http, $timeout) {
       var timeout = "";
+
+      $scope.playlistToggle = function () {
+        console.log($scope.playlist);  // TODO open extended playlist download controls
+      };
       
       $scope.addDownload = function () {
-        $http.post('/api/add', {'url': $scope.url, 'format': $scope.format, 'path': $scope.path, 'extendedPath': $scope.extendedPath}).success(function (results) {
+        $http.post('/api/add', {
+          'url': $scope.url,
+          'format': $scope.format,
+          'path': $scope.path,
+          'extendedPath': $scope.extendedPath,
+          'playlist': $scope.playlist
+        }).success(function (results) {
           $log.log(results);
           $('#url-box').val('');
           $('#url-box').attr('rows', 1);

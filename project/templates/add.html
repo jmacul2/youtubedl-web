@@ -6,12 +6,17 @@
         <select name="format" class="form-control" id="format-box" ng-model="format" ng-options="item.name as item.name for item in formats"></select> 
       </div>
     </div>
-    <div class="form-group col-md-9">
+    <div class="form-group col-md-7">
       <div class="input-group">
         <span class="input-group-addon" id="path-addon1">Path</span>
         <select name="path" class="form-control" id="path-box" ng-model="path" ng-options="item as item for item in paths"></select>
         <span class="input-group-addon" id="extended-path-addon1">/</span>
         <input type="text" class="form-control" id="extended-path-box" ng-model="extendedPath" />
+      </div>
+    </div>
+    <div class="form-group col-md-2">
+      <div class="input-group">
+        <toggle ng-model="playlist" ng-change="playlistToggle()" on="Full Playlist" off="Single Video"></toggle>
       </div>
     </div>
   </div>
