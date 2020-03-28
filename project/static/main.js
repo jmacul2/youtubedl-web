@@ -36,7 +36,7 @@
       
       $scope.getDownloads = function () {
         $http.get('/api/downloads').success(function (results) {
-          $scope.downloads = results;
+          $scope.downloads = results.data;
           timeout = $timeout($scope.getDownloads, 2000);
         }).error(function (error) {
           $log.log(error);

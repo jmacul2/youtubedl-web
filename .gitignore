@@ -1,4 +1,5 @@
 .venv/
+.env
 
 __pycache__/
 
@@ -8,5 +9,3 @@ downloads/
 *.db
 
 celerybeat-schedule
-
-.env

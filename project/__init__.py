@@ -27,9 +27,9 @@ def create_app():
     db.init_app(app)
 
     # register blueprints
-    from project.views.home import blueprint as home_bp
+    from project.views.index import blueprint as index_bp
     from project.views.api import blueprint as api_bp
-    app.register_blueprint(home_bp)
+    app.register_blueprint(index_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
 
     # register commands

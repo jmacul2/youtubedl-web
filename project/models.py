@@ -1,7 +1,7 @@
 import os
 import json
 from enum import IntEnum
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -56,18 +56,18 @@ class Download(db.Model):
     _status = db.Column('status', db.Integer, nullable=False, default=DownloadStatus.NEW.value)
     speed = db.Column(db.String)
     eta = db.Column(db.DateTime)
-    task_id = db.Column('task_id', db.String)
+    _task_id = db.Column('task_id', db.String)
     _path = db.Column('path', db.String)
-    ydl_format = db.Column(db.String)
-    ydl_template = db.Column(db.String)
     created_at = db.Column(db.DateTime)
     updated_at = db.Column(db.DateTime)
-    
+    # Relationships
+    df_id = db.Column(db.Integer, db.ForeignKey('downloads_formats.id'), nullable=False)
+    df = db.relationship('DownloadFormat', backref=db.backref('downloads', cascade='all, delete-orphan'))
+
     def __init__(self, url: str, path: str, df: DownloadFormat, created_at: datetime=datetime.utcnow()):
         self.url = url
         self._path = path
-        self.ydl_format = df.ydl_format
-        self.ydl_template = df.ydl_template
+        self.df = df
         self.created_at = created_at
         self.updated_at = created_at
 
@@ -75,8 +75,13 @@ class Download(db.Model):
         return f'<Download({self.id} - {self.status})>'
 
     @property
+    def stuck(self):
+        two_min_ago = self.updated_at + timedelta(minutes=2)
+        return two_min_ago < datetime.utcnow() and self.status != DownloadStatus.FINISHED
+
+    @property
     def outtmpl(self):
-        return os.path.join(self._path, self.ydl_template)
+        return os.path.join(self._path, self.df.ydl_template)
 
     @hybrid_property
     def status(self):
@@ -92,6 +97,15 @@ class Download(db.Model):
     @status.expression
     def status(cls):
         return cls._status
+
+    @property
+    def task_id(self):
+        return self._task_id
+
+    @task_id.setter
+    def task_id(self, tid):
+        self._task_id = tid
+        self.status = DownloadStatus.PENDING
 
     def progress_hook(self, info):
         # Already completed downloads don't have `downloaded_bytes`
@@ -118,21 +132,31 @@ class Download(db.Model):
 
     def save(self):
         with session_scope(db.session) as session:
+            self.updated_at = datetime.utcnow()  # could be done with events or something else
             session.add(self)
+
+    def delete(self):
+        with session_scope(db.session) as session:
+            session.delete(self)
 
     def to_dict(self):
         return dict(
             id=self.id,
             url=self.url,
             title=self.title,
+            path=self._path,
             downloaded_bytes=self.downloaded_bytes,
             total_bytes=self.total_bytes,
-            status=self.status,
+            status=self.status.name,
             speed=self.speed,
             eta=self.eta,
+            stuck=self.stuck,
             task_id=self.task_id,
+            df=dict(
+                name=self.df.name,
+                format=self.df.ydl_format,
+            ),
             last_update=self.updated_at,
-            format=self.ydl_format,
         )
 
 
