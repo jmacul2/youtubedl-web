@@ -1,10 +1,8 @@
 # YoutubeDL as a Web / REST server
 
-Simple Web UI to queue downloads using the great [YoutubeDL](https://rg3.github.io/youtube-dl/)
+Simple Web UI to queue downloads using the great [YoutubeDL](https://rg3.github.io/youtube-dl/).
 
-![sample](static/sample.png)
-
-It can also be used as a very simple REST api
+![sample](project/static/sample.png)
 
 ## Configure
 
@@ -36,7 +34,7 @@ Create a network drive to store downloaded files. On each worker mount the
 storage in the local `./downloads` directory so that all workers can save to it.
 
 
-## Using the API
+## Using the API!
 
 ```
 curl -XPOST -d "url=$url" http://ip:5000/api/add
@@ -61,6 +59,7 @@ curl -XPOST http://ip:5000/api/restart/<id>
 - [ ] Download hours (I have slow internet connection)
 - [x] Download directory selection
 - [x] Playlist or single video download
+- [ ] Format management and ordering
 - [ ] Filter downloads by status/path
 - [ ] Proper Docker deployment
 - [ ] Alert on frontend when `youtube-dl` fails (likely needs updating)
