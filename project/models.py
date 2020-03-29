@@ -67,6 +67,7 @@ class Download(db.Model):
 
     def __init__(self, url: str, path: str, playlist: bool, df: DownloadFormat, created_at: datetime=datetime.utcnow()):
         self.url = url
+        self.title = url
         self._path = path
         self.playlist = playlist
         self.df = df
