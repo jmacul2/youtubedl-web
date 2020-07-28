@@ -25,7 +25,7 @@ def get_download_paths():
 
 @blueprint.route('/downloads', methods=['GET'])
 def downloads():
-    downloads = Download.query.all()
+    downloads = Download.query.order_by(Download.last_update.desc()).limit(20).all()
     data = [d.to_dict() for d in downloads] if downloads else []
     return {
         'status': 'success',
