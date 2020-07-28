@@ -9,3 +9,5 @@ downloads/
 *.db
 
 celerybeat-schedule
+
+youtubedl-web.yaml

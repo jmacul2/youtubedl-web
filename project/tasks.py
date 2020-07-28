@@ -15,6 +15,8 @@ def ydl_download(self, download_id):
             'outtmpl': d.outtmpl,
             'progress_hooks': [d.progress_hook],
             'format': d.df.ydl_format,
+            'sleep_interval': 60,
+            'max_sleep_interval': 300,
         }
         y = YoutubeDL(params=opts)
         try:
