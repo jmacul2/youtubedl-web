@@ -1,6 +1,0 @@
-youtubedl:
-  build: .
-  ports:
-    - "5000:5000"
-  volumes:
-    - ./downloads/:/downloads
